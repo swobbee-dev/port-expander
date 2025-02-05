@@ -194,12 +194,15 @@ where
         // PCA9702 wants a total of 8 SCLK rising edges to shift out the input data
         // from SDOUT: The first rising edge latches the inputs, the next 8 edges
         // shift them out.
-        let mut buffer = [0u8];
+        let mut buffer = [0u8, 0u8];
         let mut ops = [Operation::TransferInPlace(&mut buffer)];
         self.0.transaction(&mut ops)?;
 
-        // buffer[0] now holds bits [in7..in0]
-        Ok(buffer[0])
+        // PCA9702 works with SPI mode 0, so when we read one byte buffer[0] now holds bits [in7..in0]
+        // Ok(buffer[0])
+
+        // Hack: When using SPI mode 1, we need to shift the bits by one position
+        Ok((buffer[0] << 1) | (buffer[1] >> 7))
     }
 }
 
